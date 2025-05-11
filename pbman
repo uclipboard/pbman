@@ -23,24 +23,29 @@ function eprintln(msg) {
     eprint(msg + "\n");
 }
 
-function execute(exec, args) {
+function execute(exec, args, enableStdin = false) {
     // execute the command
     const task = $.NSTask.alloc.init;
     task.launchPath = exec;
     task.standardOutput = stdout;
     task.standardError = stderr;
     task.arguments = args;
-
-    // to fix the EOF problem
-    const inputPipe = $.NSPipe.pipe;
-    task.standardInput = inputPipe;
+    let inputPipe;
+    if (enableStdin) {
+        // to fix the EOF problem
+        inputPipe = $.NSPipe.pipe;
+        task.standardInput = inputPipe;
+    }
 
     task.launch;
-    const pipWriter = inputPipe.fileHandleForWriting;
-    for (let chunk = stdin.availableData; chunk.length > 0; chunk = stdin.availableData) {
-        pipWriter.writeData(chunk);
+
+    if (enableStdin) {
+        const pipWriter = inputPipe.fileHandleForWriting;
+        for (let chunk = stdin.availableData; chunk.length > 0; chunk = stdin.availableData) {
+            pipWriter.writeData(chunk);
+        }
+        pipWriter.closeFile;
     }
-    pipWriter.closeFile;
 
     task.waitUntilExit;
     const status = task.terminationStatus;
@@ -72,7 +77,7 @@ function PasteBoardChangeWatchLoop(F) {
 
 function copy(args) {
     // execute the pbcopy command
-    execute("/usr/bin/pbcopy", args);
+    execute("/usr/bin/pbcopy", args, true);
 }
 
 function paste(args) {
