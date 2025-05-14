@@ -96,16 +96,20 @@ function watch(cmd) {
     PasteBoardChangeWatchLoop(() => {
         // this command would be a shell command after join
         // so let's execute the command with sh
+        // add pbpaste to the command
+        // very ugly implementation :-(
+        cmd = "/usr/bin/pbpaste | " + cmd;
         execute("/bin/sh", ["-c", cmd]);
     });
 }
 
 function help() {
-    eprintln(`${APP_NAME}(https://github.com/uclipboard/pbman) - A simple pasteboard manager wrapper for macOS, a part of uclipboard.`);
+    eprintln(`${APP_NAME}(https://github.com/uclipboard/pbman) - A very simple pasteboard manager wrapper for macOS, part of uclipboard.`);
     eprintln(`Usage: ${APP_NAME} <sub-command> <options>...`);
     eprintln("Commands:");
-    eprintln("  watch <command> Watch the clipboard and execute the command when it changes, " +
-        "e.g. `watch 'echo Hello World'` or `watch echo Hello World.`, it will concatenate the command so don't worry.");
+    eprintln("  watch <command> Watch the clipboard, when it changes, execute this command with updated clipboard content as stdin." +
+        `E.g. "${APP_NAME} watch 'echo Hello World'" or "${APP_NAME} watch echo Hello World.", it will concatenate the command so don't worry,` +
+        `E.g. "${APP_NAME} watch cat" will execute "cat" command with the clipboard content as stdin.`);
     eprintln("  copy <options>\t\tCopy text from stdin to the clipboard by pbcopy, <options> will be passed to pbcopy.");
     eprintln("  paste <options>\t\tPaste text from the clipboard by pbpaste, <options> will be passed to pbpaste.");
 }
